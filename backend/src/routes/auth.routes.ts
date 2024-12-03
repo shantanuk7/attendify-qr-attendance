@@ -1,2 +1,6 @@
 import { Router } from "express";
-import jwt from "jsonwebtoken";
+import { signup } from "../controllers/auth.controller";
+
+const router = Router();
+
+router.post('/signup',signup)
