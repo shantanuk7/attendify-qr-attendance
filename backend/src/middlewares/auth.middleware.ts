@@ -22,7 +22,6 @@ export const verifyToken = (
   res: Response,
   next: NextFunction
 ): void => {
-  // Retrieve token from authorization header
   const token = req.headers["authorization"]?.split(" ")[1]!;
 
   if (!token) {
