@@ -16,17 +16,17 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
     const existingAdmin = await UserModel.findOne({ email });
 
     if (existingAdmin) {
-      res
-        .status(403)
-        .json({ error: true, message: "Usere Already Exisit" });
+      res.status(403).json({ error: true, message: "Usere Already Exisit" });
       return;
     }
-    const pass = await hashedPassword(password)
+    console.log("Passwod" + password +" " + typeof(password))
+    const pass = await hashedPassword(password);
+    console.log(pass)
     const newAdmin = new UserModel({
       username,
       email,
       password: pass,
-      role: "admin", 
+      role: "admin",
     });
 
     await newAdmin.save();
@@ -37,7 +37,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
       error: false,
       message: "Admin registered successfully",
       token,
-      role:'admin'
+      role: "admin",
     });
   } catch (error) {
     console.error("Signup error:", error);
@@ -69,24 +69,23 @@ export const signin = async (req: Request, res: Response): Promise<void> => {
     }
 
     const token = generateToken(user.id, user.email, user.role);
-    if(user.role == 'admin'){
+    if (user.role == "admin") {
       res.status(200).json({
         error: false,
         message: "User signed in successfully",
         token,
-        role:'admin'
+        role: "admin",
       });
-      return
+      return;
     }
     res.status(200).json({
       error: false,
       message: "User signed in successfully",
       token,
-      role:'user'
+      role: "user",
     });
   } catch (error) {
     console.error("Signin error:", error);
     res.status(500).json({ error: true, message: "Internal Server Error" });
   }
 };
-
