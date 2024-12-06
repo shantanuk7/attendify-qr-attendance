@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcryptjs from "bcryptjs";
 import UserModel from "../models/User.model";
 import generateToken from "../utils/generateToken";
+import hashedPassword from "../utils/hashPassword";
 
 /**
  * Sign Up Controller - Only Admins can signup and add users.
@@ -20,14 +21,11 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
         .json({ error: true, message: "Usere Already Exisit" });
       return;
     }
-
-    const salt = await bcryptjs.genSalt(10);
-    const hashedPassword = await bcryptjs.hash(password, salt);
-
+    const pass = await hashedPassword(password)
     const newAdmin = new UserModel({
       username,
       email,
-      password: hashedPassword,
+      password: pass,
       role: "admin", 
     });
 
@@ -92,49 +90,3 @@ export const signin = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-/**
- * Add User Controller - Only Admin can add new users.
- * @param req - Express request object
- * @param res - Express response object
- */
-export const addUser = async (req: Request, res: Response): Promise<void> => {
-  const { adminEmail, username, email, password } = req.body;
-
-  try {
-    const admin = await UserModel.findOne({ email: adminEmail, role: "admin" });
-
-    if (!admin) {
-      res.status(403).json({ error: true, message: "Unauthorized access" });
-      return;
-    }
-
-    const existingUser = await UserModel.findOne({ email });
-
-    if (existingUser) {
-      res
-        .status(409)
-        .json({ error: true, message: "User with this email already exists" });
-      return;
-    }
-
-    const salt = await bcryptjs.genSalt(10);
-    const hashedPassword = await bcryptjs.hash(password, salt);
-
-    const newUser = new UserModel({
-      username,
-      email,
-      password: hashedPassword,
-      role: "user", 
-    });
-
-    await newUser.save();
-
-    res.status(201).json({
-      error: false,
-      message: "User added successfully",
-    });
-  } catch (error) {
-    console.error("Add user error:", error);
-    res.status(500).json({ error: true, message: "Internal Server Error" });
-  }
-};

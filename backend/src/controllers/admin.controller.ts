@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import UserModel from "../models/User.model";
 import bcryptjs from "bcryptjs";
+import hashedPassword from "../utils/hashPassword";
 
 /**
  * Add a new user (Admin only).
@@ -16,14 +17,11 @@ export const addUser = async (req: Request, res: Response): Promise<void> => {
       res.status(409).json({ error: true, message: "User already exists" });
       return;
     }
-
-    const salt = await bcryptjs.genSalt(10);
-    const hashedPassword = await bcryptjs.hash(password, salt);
-
+    const pass = await hashedPassword(password)
     const newUser = new UserModel({
       username,
       email,
-      password: hashedPassword,
+      password: pass,
       role: "user", 
     });
 
@@ -64,7 +62,6 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
  */
 export const getUser = async (req: Request, res: Response): Promise<void> => {
   const { userEmail } = req.params;
-    console.log(userEmail)
   try {
     const user = await UserModel.findOne({email:userEmail}).select("-password");
     if (!user) {
@@ -88,12 +85,12 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
  * @param res - Express response object to send the updated user data.
  */
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
+  const { userEmail } = req.params;
   const updates = req.body;
 
   try {
-    const user = await UserModel.findByIdAndUpdate(
-      id,
+    const user = await UserModel.findOneAndUpdate(
+      {email:userEmail},
       { $set: updates },
       { new: true }
     ).select("-password");
@@ -120,10 +117,10 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
  * @param res - Express response object to send the deletion status.
  */
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
+  const { userEmail } = req.params;
 
   try {
-    const user = await UserModel.findByIdAndDelete(id);
+    const user = await UserModel.findOneAndDelete({email:userEmail});
     if (!user) {
       res.status(404).json({ error: true, message: "User not found" });
       return;

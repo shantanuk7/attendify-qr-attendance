@@ -8,8 +8,8 @@ router.post('/users', addUser);
 router.get('/users', getUsers);
 router.get('/users/:userEmail', getUser);
 
-router.put('/users/:userId', updateUser);
+router.put('/users/:userEmail', updateUser);
 
-router.delete('/users/:userId', deleteUser);
+router.delete('/users/:userEmail', deleteUser);
 
 export default router;
