@@ -1,26 +1,38 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface ISession extends Document {
-    qrCode: string;
-    groupId: mongoose.Types.ObjectId; 
-    date: Date;
-  }
-  
-  const SessionSchema: Schema = new Schema({
-    qrCode: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    groupId: {
+  groupId: mongoose.Types.ObjectId;
+  expiryTime: Date;
+  createdAt: Date;
+  createdBy: mongoose.Types.ObjectId;
+  attendees: mongoose.Types.ObjectId[];  // Add attendees field
+}
+
+const SessionSchema: Schema = new Schema({
+  groupId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group',
+    required: true,
+  },
+  expiryTime: {
+    type: Date,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  attendees: [
+    {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Group',
-      required: true,
-    }, // Added groupId
-    date: {
-      type: Date,
-      default: Date.now,
+      ref: 'User',
     },
-  });
-  
-  export default mongoose.model<ISession>('Session', SessionSchema);
+  ],  
+});
+
+export default mongoose.model<ISession>('Session', SessionSchema);

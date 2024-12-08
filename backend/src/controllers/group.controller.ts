@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Group from '../models/Group.model';
+import User from '../models/User.model'; 
 
 /**
  * Create a new group.
@@ -44,6 +45,44 @@ export const getGroups = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json(groups);
   } catch (error) {
     console.error('Error fetching groups:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * Add a user to a group.
+ * 
+ * @param req - The HTTP request object containing `groupId` and `userId` in the body.
+ * @param res - The HTTP response object to send back the result.
+ * @returns A JSON response indicating success or failure.
+ */
+export const addUserToGroup = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { groupId, userId } = req.body;
+
+    if (!groupId || !userId) {
+      res.status(400).json({ error: 'Group ID and User ID are required' });
+      return;
+    }
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      res.status(404).json({ error: 'Group not found' });
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    group.members.push(userId);
+    await group.save();
+
+    res.status(200).json({ message: 'User added to group successfully', group });
+  } catch (error) {
+    console.error('Error adding user to group:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -1,33 +1,35 @@
 import { Request, Response } from 'express';
-import Session from '../models/Session.model'; // Assuming your session model file name
-import mongoose from 'mongoose';
-import GroupModel from '../models/Group.model';
+import Session from '../models/Session.model'; 
+import UserModel from '../models/User.model';
+
+
 
 /**
- * @desc    Create a new session with a QR code
+ * @desc    Create a new session
  * @route   POST /api/admin/create-session
  * @access  Admin
  */
 export const createSession = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { qrCode, date, groupId } = req.body;
+    const { expiryTime, groupId } = req.body;
+    const createdByEmail = req.user?.email; 
 
-    if (!qrCode || !groupId) {
-      res.status(400).json({ error: 'QR code and groupId are required.' });
+    if (!expiryTime || !groupId || !createdByEmail) {
+      res.status(400).json({ error: 'expiryTime, groupId, and createdBy are required.' });
       return;
     }
 
-    // Check if the group exists
-    const group = await GroupModel.findById(groupId);
-    if (!group) {
-      res.status(400).json({ error: 'Group not found.' });
+    const user = await UserModel.findOne({ email: createdByEmail });
+    if (!user) {
+      res.status(400).json({ error: 'Admin user not found.' });
       return;
     }
 
+   
     const session = new Session({
-      qrCode,
-      date: date || new Date(),
-      groupId, 
+      groupId,
+      expiryTime: new Date(expiryTime),
+      createdBy: user._id, 
     });
 
     await session.save();
@@ -42,6 +44,7 @@ export const createSession = async (req: Request, res: Response): Promise<void> 
   }
 };
 
+
 /**
  * @desc    Get all sessions
  * @route   GET /api/admin/get-sessions
@@ -49,7 +52,26 @@ export const createSession = async (req: Request, res: Response): Promise<void> 
  */
 export const getSessions = async (req: Request, res: Response): Promise<void> => {
   try {
-    const sessions = await Session.find();
+    const createdByEmail = req.user?.email;
+
+    if (!createdByEmail) {
+      res.status(400).json({ error: 'Admin email is required.' });
+      return;
+    }
+
+  
+    const admin = await UserModel.findOne({ email: createdByEmail });
+    if (!admin) {
+      res.status(404).json({ error: 'Admin not found.' });
+      return;
+    }
+
+    const sessions = await Session.find({ createdBy: admin._id }).populate('createdBy', 'username email');
+
+    if (!sessions.length) {
+      res.status(404).json({ message: 'No sessions found for this admin.' });
+      return;
+    }
 
     res.status(200).json({
       message: 'Sessions fetched successfully.',

@@ -4,7 +4,7 @@ export interface IGroup extends Document {
   name: string;
   description?: string;
   createdBy: mongoose.Types.ObjectId;
-  members: mongoose.Types.ObjectId[]; // Added field
+  members: mongoose.Types.ObjectId[]; 
   createdAt: Date;
 }
 
@@ -30,7 +30,7 @@ const GroupSchema: Schema = new Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-  ], // Added members array
+  ], 
   createdAt: {
     type: Date,
     default: Date.now,

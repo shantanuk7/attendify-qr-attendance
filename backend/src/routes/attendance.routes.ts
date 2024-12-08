@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { getUserAttendance, markAttendance } from '../controllers/attendance.controller';
+import { getSessionAttendees, getUserAttendance, markAttendance } from '../controllers/attendance.controller';
 
 
 const router = Router();
@@ -10,6 +10,11 @@ const router = Router();
  */
 router.post('/mark', markAttendance);
 
+/**
+ * Get Attendance for a Session
+ * @route   GET /api/attendance/:sessionID
+ */
+router.get('/:sessionId', getSessionAttendees);
 /**
  * Get Attendance for a Particular User
  * @route   GET /api/attendance/user/:userId
