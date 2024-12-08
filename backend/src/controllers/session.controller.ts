@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Session from '../models/Session.model'; // Assuming your session model file name
 import mongoose from 'mongoose';
+import GroupModel from '../models/Group.model';
 
 /**
  * @desc    Create a new session with a QR code
@@ -9,17 +10,24 @@ import mongoose from 'mongoose';
  */
 export const createSession = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { qrCode, date } = req.body;
+    const { qrCode, date, groupId } = req.body;
 
-    if (!qrCode) {
-      res.status(400).json({ error: 'QR code is required.' });
+    if (!qrCode || !groupId) {
+      res.status(400).json({ error: 'QR code and groupId are required.' });
       return;
     }
 
-    // Create new session
+    // Check if the group exists
+    const group = await GroupModel.findById(groupId);
+    if (!group) {
+      res.status(400).json({ error: 'Group not found.' });
+      return;
+    }
+
     const session = new Session({
       qrCode,
       date: date || new Date(),
+      groupId, 
     });
 
     await session.save();

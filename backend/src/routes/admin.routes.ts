@@ -6,8 +6,7 @@ import {
   updateUser,
   deleteUser,
 } from '../controllers/admin.controller';
-import { createGroup, getGroups } from '../controllers/group.controller';
-import { createSession, getSessions } from '../controllers/session.controller';
+import { addUserToGroup, createGroup, getGroups } from '../controllers/group.controller';
 
 const router = Router();
 
@@ -65,5 +64,9 @@ router.post('/create-group', createGroup);
 // @access  Admin Only
 router.get('/get-groups', getGroups);
 
-
+// Add a user to a group
+// @route   POST /api/admin/add-user-to-group
+// @desc    Associate a user with a group
+// @access  Admin Only
+router.post('/add-user-to-group', addUserToGroup);
 export default router;

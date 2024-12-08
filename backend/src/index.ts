@@ -29,7 +29,7 @@ app.use("/api/admin", verifyToken, adminRoutes);
 // Attendance Routes
 app.use("/api/attendance", verifyToken, attendanceRoutes);
 
-// Session Routes
+// Session Routes Data
 app.use("/api/session", verifyToken, sessionRoutes);
 
 // Start the Server

@@ -1,21 +1,19 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IGroup extends Document {
-  name: string; 
-  description?: string; 
-  createdBy: mongoose.Types.ObjectId; 
-  createdAt: Date; 
+  name: string;
+  description?: string;
+  createdBy: mongoose.Types.ObjectId;
+  members: mongoose.Types.ObjectId[]; // Added field
+  createdAt: Date;
 }
 
-/**
- * Schema definition for Group
- */
 const GroupSchema: Schema = new Schema({
   name: {
     type: String,
     required: true,
     unique: true,
-    trim: true, 
+    trim: true,
   },
   description: {
     type: String,
@@ -25,15 +23,18 @@ const GroupSchema: Schema = new Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true, 
+    required: true,
   },
+  members: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+  ], // Added members array
   createdAt: {
     type: Date,
-    default: Date.now, 
+    default: Date.now,
   },
 });
 
-/**
- * Group model export
- */
 export default mongoose.model<IGroup>('Group', GroupSchema);
