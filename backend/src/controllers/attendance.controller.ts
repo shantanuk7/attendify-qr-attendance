@@ -1,10 +1,5 @@
 import { Request, Response } from "express";
-import Attendance from "../models/Attendance.model";
 import Session from "../models/Session.model";
-import User from "../models/User.model";
-import mongoose from "mongoose";
-
-
 
 /**
  * Mark Attendance

@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import UserModel from "../models/User.model";
-import bcryptjs from "bcryptjs";
 import hashedPassword from "../utils/hashPassword";
 
 /**
