@@ -4,7 +4,6 @@ import CardWrapper from "./cardWrapper";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -20,10 +19,12 @@ import { useFormStatus } from "react-dom";
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-
+import Cookies from "js-cookie";
+import { useToast } from "@/hooks/use-toast";
 const SignInForm = () => {
   const [loading, setLoading] = useState(false);
-  const router = useRouter() 
+  const router = useRouter();
+  const {toast} = useToast();
   const form = useForm({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -34,35 +35,67 @@ const SignInForm = () => {
 
   const onSubmit = async (data: z.infer<typeof LoginSchema>) => {
     setLoading(true);
-
+  
     try {
-
-      const response = await axios.post("http://localhost:5000/api/auth/signin", data);
-
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URI!}/auth/signin`, data,{
+        headers:{
+          "Content-Type":"application/json"
+        }
+      });
       const { token, role } = response.data;
-
+  
       if (!token) {
-        alert("Token not found. Please try again.");
-        setLoading(false);
+        toast({
+          title: "Authentication Error",
+          description: "Authentication token missing. Please try again.",
+          variant: "destructive",
+        });
         return;
       }
-
- 
-      localStorage.setItem("authToken", `Bearer ${token}`);
-
-
-      document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}`; // Set a cookie for 7 days
-
+  
+      Cookies.set("authToken", token, { expires: 7, secure: true, sameSite: "Strict" });
+  
       if (role === "admin") {
         router.push("/admin");
       } else if (role === "user") {
         router.push("/user");
       } else {
-        alert("Unknown role, please contact support.");
+        toast({
+          title: "Unexpected Role",
+          description: "Unexpected role. Please contact support.",
+          variant: "destructive",
+        });
       }
     } catch (error: any) {
-      console.error("Error:", error.message || error);
-      alert("An unexpected error occurred. Please try again.");
+      if (error.response) {
+        const { status, data } = error.response;
+  
+        if (status === 401) {
+          toast({
+            title: "Invalid Credentials",
+            description: data.message || "Invalid credentials. Please try again.",
+            variant: "destructive",
+          });
+        } else if (status === 500) {
+          toast({
+            title: "Server Error",
+            description: data.message || "Server error. Please try again later.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Unknown Error",
+            description: data.message || "An unknown error occurred. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Network Error",
+          description: "Please check your internet connection.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
