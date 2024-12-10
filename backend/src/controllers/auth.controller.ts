@@ -74,7 +74,7 @@ export const signin = async (req: Request, res: Response): Promise<void> => {
         error: false,
         message: "User signed in successfully",
         token,
-        role: "admin",
+        role: user.role,
       });
       return;
     }

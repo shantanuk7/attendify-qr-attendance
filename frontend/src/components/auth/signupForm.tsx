@@ -15,32 +15,66 @@ import { useForm } from "react-hook-form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { z } from "zod";
-import { useFormStatus } from "react-dom";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+
 const SignUpForm = () => {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
   const form = useForm({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
       email: "",
-      name: "",
+      username: "",
       password: "",
       confirmPassword: "",
     },
   });
 
-  const onSubmit = (data: z.infer<typeof RegisterSchema>) => {
+  const onSubmit = async (data: z.infer<typeof RegisterSchema>) => {
     setLoading(true);
-    console.log(data);
-  };
 
-  const { pending } = useFormStatus();
+    try {
+      const response = await axios.post("http://localhost:5000/api/auth/signup", data);
+
+      const { token, role } = response.data;
+
+      if (!token) {
+        alert("Token not found. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem("authToken", `Bearer ${token}`);
+      document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}`;
+
+      if (role === "admin") {
+        router.push("/admin");
+      } else if (role === "user") {
+        router.push("/user");
+      } else {
+        alert("Unknown role, please contact support.");
+      }
+    } catch (error: any) {
+      console.error("Error:", error.message || error);
+
+      if (error.response) {
+        alert(error.response.data.message || "Something went wrong.");
+      } else {
+        alert("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <CardWrapper
       label="Create an account"
       title="Register"
       backButtonHref="/auth/signin"
-      backButtonLabel="Already have an account? Signin here."
+      backButtonLabel="Already have an account? Sign in here."
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -64,7 +98,7 @@ const SignUpForm = () => {
             />
             <FormField
               control={form.control}
-              name="name"
+              name="username"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
@@ -102,7 +136,7 @@ const SignUpForm = () => {
               )}
             />
           </div>
-          <Button type="submit" className="w-full" disabled={pending}>
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Loading..." : "Sign Up"}
           </Button>
         </form>

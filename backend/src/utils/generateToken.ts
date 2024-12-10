@@ -29,7 +29,7 @@ const generateToken = (id: string, email: string, role: string): string => {
     role,
   };
 
-  const options = { expiresIn: "1d" };
+  const options = { expiresIn: "1h" };
 
   try {
     const token = jwt.sign(payload, JWT_SECRET_KEY!, options);

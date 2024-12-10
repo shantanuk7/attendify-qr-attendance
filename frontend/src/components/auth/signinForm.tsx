@@ -18,10 +18,12 @@ import { Button } from "../ui/button";
 import { z } from "zod";
 import { useFormStatus } from "react-dom";
 import { useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const SignInForm = () => {
   const [loading, setLoading] = useState(false);
-
+  const router = useRouter() 
   const form = useForm({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -30,9 +32,40 @@ const SignInForm = () => {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof LoginSchema>) => {
+  const onSubmit = async (data: z.infer<typeof LoginSchema>) => {
     setLoading(true);
-    console.log(data);
+
+    try {
+
+      const response = await axios.post("http://localhost:5000/api/auth/signin", data);
+
+      const { token, role } = response.data;
+
+      if (!token) {
+        alert("Token not found. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+ 
+      localStorage.setItem("authToken", `Bearer ${token}`);
+
+
+      document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}`; // Set a cookie for 7 days
+
+      if (role === "admin") {
+        router.push("/admin");
+      } else if (role === "user") {
+        router.push("/user");
+      } else {
+        alert("Unknown role, please contact support.");
+      }
+    } catch (error: any) {
+      console.error("Error:", error.message || error);
+      alert("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const { pending } = useFormStatus();
