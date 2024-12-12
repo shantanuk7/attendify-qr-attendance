@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import Session from '../models/Session.model'; 
 import UserModel from '../models/User.model';
 
-
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * @desc    Create a new session
@@ -12,7 +12,7 @@ import UserModel from '../models/User.model';
 export const createSession = async (req: Request, res: Response): Promise<void> => {
   try {
     const { expiryTime, groupId } = req.body;
-    const createdByEmail = req.user?.email; 
+    const createdByEmail = req.user?.email;
 
     if (!expiryTime || !groupId || !createdByEmail) {
       res.status(400).json({ error: 'expiryTime, groupId, and createdBy are required.' });
@@ -25,25 +25,27 @@ export const createSession = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-   
+    // Generate a unique qrCode (you could use another method for this if necessary)
+    const qrCode = uuidv4(); // Example of generating a unique QR code identifier
+
     const session = new Session({
       groupId,
       expiryTime: new Date(expiryTime),
-      createdBy: user._id, 
+      createdBy: user._id,
+      qrCode,  // Assign the generated qrCode
     });
 
     await session.save();
 
     res.status(201).json({
       message: 'Session created successfully.',
-      session,
+      session:session._id,
     });
   } catch (error) {
     console.error('Error creating session:', error);
     res.status(500).json({ error: 'Failed to create session.' });
   }
 };
-
 
 /**
  * @desc    Get all sessions

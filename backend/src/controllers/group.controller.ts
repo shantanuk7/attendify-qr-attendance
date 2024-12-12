@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import Group from '../models/Group.model';
 import User from '../models/User.model'; 
-
+import {jwtDecode} from "jwt-decode";
 /**
  * Create a new group.
  * 
@@ -11,25 +11,33 @@ import User from '../models/User.model';
  */
 export const createGroup = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, description, createdBy } = req.body;
+    const { name, description } = req.body;
 
-    // Validate required fields
-    if (!name || !createdBy) {
-      res.status(400).json({ error: 'Name and createdBy fields are required' });
+    if (!name) {
+      res.status(400).json({ error: "Name is required" });
       return;
     }
 
-    // Create and save the new group
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      res.status(401).json({ error: "Authorization token is missing or invalid" });
+      return;
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwtDecode<{ id: string }>(token); 
+
+    const createdBy = decoded.id; 
+
     const newGroup = new Group({ name, description, createdBy });
     await newGroup.save();
 
-    res.status(201).json({ message: 'Group created successfully', group: newGroup });
+    res.status(201).json({ message: "Group created successfully", group: newGroup });
   } catch (error) {
-    console.error('Error creating group:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error creating group:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
-
 /**
  * Retrieve all groups.
  * 
