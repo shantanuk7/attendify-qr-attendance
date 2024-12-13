@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import Session from "../models/Session.model";
+import { jwtDecode } from "jwt-decode";
+import mongoose from "mongoose";
 
 /**
  * Mark Attendance
@@ -11,19 +13,28 @@ import Session from "../models/Session.model";
  */
 export const markAttendance = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { sessionId, userId } = req.body;
+    const { sessionId } = req.body;
 
-    if (!sessionId || !userId) {
-      res.status(400).json({ error: 'Session ID and User ID are required.' });
+    if (!sessionId) {
+      res.status(400).json({ error: 'Session ID is required.' });
       return;
     }
+
+    const authHeader = req.headers.authorization!;
+    const token = authHeader.split(" ")[1];
+    
+    const decodedToken = jwtDecode<{ id: string }>(token);
+    const userId = decodedToken.id;
+
+
+    const userObjectId = new mongoose.Types.ObjectId(userId);
 
     const session = await Session.findById(sessionId).populate({
       path: 'groupId',
       populate: {
         path: 'members',
         model: 'User',
-        select: 'username email'
+        select: 'username email',
       }
     });
 
@@ -38,7 +49,7 @@ export const markAttendance = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    const userExistsInGroup = group.members.some((user: any) => user._id.equals(userId));
+    const userExistsInGroup = group.members.some((user: any) => user._id.equals(userObjectId));
     if (!userExistsInGroup) {
       res.status(403).json({ error: 'User is not part of this group.' });
       return;
@@ -50,11 +61,12 @@ export const markAttendance = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    if (session.attendees.includes(userId)) {
+    if (session.attendances.includes(userObjectId)) {
       res.status(400).json({ error: 'Attendance already marked for this user.' });
       return;
     }
-    session.attendees.push(userId);
+
+    session.attendances.push(userObjectId);
     await session.save();
 
     res.status(200).json({
@@ -80,7 +92,7 @@ export const getSessionAttendees = async (req: Request, res: Response): Promise<
     const { sessionId } = req.params;
 
     const session = await Session.findById(sessionId).populate({
-      path: 'attendees',
+      path: 'attendances',
       select: 'username email' 
     });
 
@@ -90,7 +102,7 @@ export const getSessionAttendees = async (req: Request, res: Response): Promise<
     }
 
     res.status(200).json({
-      attendees: session.attendees,
+      attendances: session.attendances,
     });
   } catch (error) {
     console.error('Error fetching attendees:', error);

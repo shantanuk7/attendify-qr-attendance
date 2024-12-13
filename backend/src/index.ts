@@ -16,10 +16,15 @@ dotenv.config();
 const app = express();
 connect();
 
+const allowedOrigins = [
+    'http://localhost:3000',      
+    'http://192.168.0.106:3000', 
+  ];
 // Middleware
 app.use(cors(
 {
-    origin:'http://localhost:3000',
+    origin:'*',
+    credentials: true,
 }
 ));
 app.use(express.json());

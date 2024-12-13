@@ -5,7 +5,7 @@ export interface ISession extends Document {
   expiryTime: Date;
   createdAt: Date;
   createdBy: mongoose.Types.ObjectId;
-  attendees: mongoose.Types.ObjectId[];
+  attendances: mongoose.Types.ObjectId[];
   qrCode: string | null;  // Add qrCode field
 }
 
@@ -28,7 +28,7 @@ const SessionSchema: Schema = new Schema({
     ref: 'User',
     required: true,
   },
-  attendees: [
+  attendances: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

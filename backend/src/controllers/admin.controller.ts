@@ -43,7 +43,7 @@ export const addUser = async (req: Request, res: Response): Promise<void> => {
  */
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
   try {
-    const users = await UserModel.find({role:"user"}).select("-password"); // Exclude passwords
+    const users = await UserModel.find({role:"user"}).select("-password"); 
     res.status(200).json({
       error: false,
       data: users,

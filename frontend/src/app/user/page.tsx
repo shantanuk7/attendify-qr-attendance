@@ -5,7 +5,7 @@ import { Html5QrcodeScanner } from 'html5-qrcode';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useToast } from '@/hooks/use-toast';
-
+import { jwtDecode } from 'jwt-decode';
 const User = () => {
   const [scannedData, setScannedData] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,18 +50,14 @@ const User = () => {
         return;
       }
 
-      const userId = JSON.parse(atob(token.split('.')[1])).userId; // Decode user ID from JWT token
-      const session = JSON.parse(sessionData); // Parse scanned QR data
 
-      if (!session._id) {
-        throw new Error('Invalid QR code data.');
-      }
+
+      const session = JSON.parse(sessionData);
 
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URI!}/attendance/mark`,
         {
-          sessionId: session._id,
-          userId,
+          sessionId: session.sessionId,
         },
         {
           headers: {
@@ -74,7 +70,7 @@ const User = () => {
         title: 'Attendance marked successfully!',
         description: `Expiry Time: ${response.data.expiryTime}`,
       });
-    } catch (error:any) {
+    } catch (error: any) {
       console.error('Error marking attendance:', error);
       toast({
         title: 'Failed to mark attendance.',
@@ -92,12 +88,17 @@ const User = () => {
       <div
         ref={scannerRef}
         id="reader"
-        className="w-full max-w-md bg-gray-100 rounded-lg shadow-md"
+        className="w-full max-w-md bg-gray-100 rounded-lg shadow-md p-4"
       />
-      {scannedData && (
-        <p className="text-sm text-gray-700">Scanned Data: {scannedData}</p>
-      )}
-      {loading && <p className="text-blue-500">Marking attendance...</p>}
+      <div className="mt-4">
+        {loading ? (
+          <p className="text-center">Scanning and marking attendance...</p>
+        ) : (
+          <p className="text-center">
+            {scannedData ? `Scanned Data: ${scannedData}` : 'Scan a QR code to mark attendance'}
+          </p>
+        )}
+      </div>
     </div>
   );
 };

@@ -17,7 +17,6 @@ export const createGroup = async (req: Request, res: Response): Promise<void> =>
       res.status(400).json({ error: "Name is required" });
       return;
     }
-
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       res.status(401).json({ error: "Authorization token is missing or invalid" });
@@ -47,13 +46,22 @@ export const createGroup = async (req: Request, res: Response): Promise<void> =>
  */
 export const getGroups = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Fetch all groups from the database
-    const groups = await Group.find().populate('createdBy', 'username email');
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized access" });
+      return;
+    }
+
+    const groups = await Group.find({ createdBy: userId }).populate(
+      "createdBy",
+      "username email"
+    );
 
     res.status(200).json(groups);
   } catch (error) {
-    console.error('Error fetching groups:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching groups:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
