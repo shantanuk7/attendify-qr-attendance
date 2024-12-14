@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { getSessionAttendees, getUserAttendance, markAttendance } from '../controllers/attendance.controller';
+import { getSessionAttendees, getUserAttendance, groupWiseAttendance, markAttendance } from '../controllers/attendance.controller';
 
 
 const router = Router();
@@ -21,4 +21,6 @@ router.get('/:sessionId', getSessionAttendees);
  */
 router.get('/user/:userId', getUserAttendance);
 
+
+router.get('/group-wise-data/:groupId',groupWiseAttendance)
 export default router;

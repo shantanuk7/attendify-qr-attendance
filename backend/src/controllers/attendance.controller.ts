@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import Session from "../models/Session.model";
 import { jwtDecode } from "jwt-decode";
 import mongoose from "mongoose";
+import GroupModel from "../models/Group.model";
+import SessionModel from "../models/Session.model";
+import UserModel from "../models/User.model";
 
 /**
  * Mark Attendance
@@ -135,30 +138,88 @@ export const getSessionAttendees = async (req: Request, res: Response): Promise<
  * @route   GET /api/attendance/user/:userId
  * @access  User
  */
-export const getUserAttendance = async (req: Request, res: Response): Promise<void> => {
+export const getUserAttendance = async (req:Request, res:Response) => {
   try {
     const { userId } = req.params;
 
-    const sessions = await Session.find({ attendees: userId })
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    
+    const sessions = await Session.find({ attendances: userObjectId })
+      .select('groupId expiryTime createdAt')
       .populate({
         path: 'groupId',
-        select: 'name description',  
-      })
-      .populate({
-        path: 'attendees',
-        select: 'username email',  
+        select: 'name',
       });
 
     if (sessions.length === 0) {
-      res.status(404).json({ error: 'No sessions found for this user.' });
+      res.json({ error: 'No sessions found for this user.' }).status(404);
       return;
     }
 
-    res.status(200).json({
+    res.json({
       sessions,
-    });
+    }).status(200);
   } catch (error) {
     console.error('Error fetching user attendance:', error);
     res.status(500).json({ error: 'Failed to fetch user attendance.' });
   }
 };
+export const groupWiseAttendance = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { groupId } = req.params; 
+  
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      res.status(400).json({ message: 'Invalid groupId format' });
+      return;
+    }
+  
+    // Aggregate sessions for the given group with attendance count
+    const groupAttendance = await GroupModel.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(groupId) }, 
+      },
+      {
+        $lookup: {
+          from: 'sessions',
+          localField: '_id',
+          foreignField: 'groupId',
+          as: 'sessions',
+        },
+      },
+      {
+        $unwind: {
+          path: '$sessions',
+          preserveNullAndEmptyArrays: true,  
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',  
+          localField: 'sessions.attendances',
+          foreignField: '_id',
+          as: 'attendees',
+        },
+      },
+      {
+        $project: {
+          groupName: '$name',
+          sessionId: '$sessions._id',
+          // Use $ifNull to ensure attendances is always an array, even if missing
+          attendanceCount: { $size: { $ifNull: ['$sessions.attendances', []] } },
+        },
+      },
+    ]);
+  
+    // If no data is found, return a "no data" message
+    if (groupAttendance.length === 0) {
+       res.status(404).json({ message: 'No data found for this group' });
+    }
+  
+    res.status(200).json({
+      groupAttendance,
+    });
+  } catch (error) {
+    console.error('Error fetching group-wise session attendance:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+}
