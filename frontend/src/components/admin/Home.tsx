@@ -25,8 +25,14 @@ const GroupAttendanceChart = () => {
           return;
         }
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URI!}/admin/get-groups`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          },
+          
         });
+        console.log(response.data);
+        
         setGroups(response.data); // Set groups into state
       } catch (error) {
         console.error('Error fetching groups:', error);
@@ -51,8 +57,10 @@ const GroupAttendanceChart = () => {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URI!}/attendance/group-wise-data/${groupId}`,
           {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+            headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          }}
         );
 
         const data = response.data.groupAttendance;
@@ -98,12 +106,16 @@ const GroupAttendanceChart = () => {
           <SelectValue placeholder="Select Group" />
         </SelectTrigger>
         <SelectContent>
-          {groups.map((group) => (
-            <SelectItem key={group._id} value={group._id}>
-              {group.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
+            {Array.isArray(groups) && groups.length > 0 ? (
+              groups.map((group) => (
+                <SelectItem key={group._id} value={group._id}>
+                  {group.name}
+                </SelectItem>
+              ))
+            ) : (
+              <>No groups available</>
+            )}
+          </SelectContent>
       </Select>
 
       {/* Show error message if available */}

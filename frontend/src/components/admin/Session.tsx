@@ -55,8 +55,10 @@ const SessionTable = () => {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URI!}/session/get-sessions`,
           {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+            headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          } },
         );
 
         setSessions(response.data.sessions);
@@ -80,8 +82,11 @@ const SessionTable = () => {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URI!}/attendance/${sessionId}`,
         {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          } },
+        
       );
       setSelectedSession(response.data.attendances);
       console.log(selectedSession)

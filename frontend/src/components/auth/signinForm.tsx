@@ -43,7 +43,8 @@ const SignInForm = () => {
         }
       });
       const { token, role } = response.data;
-  
+      console.log(token, role);
+      
       if (!token) {
         toast({
           title: "Authentication Error",
@@ -58,6 +59,8 @@ const SignInForm = () => {
       if (role === "admin") {
         router.push("/admin");
       } else if (role === "user") {
+        console.log("Pushing to /user");
+        
         router.push("/user");
       } else {
         toast({
@@ -90,6 +93,8 @@ const SignInForm = () => {
           });
         }
       } else {
+        console.log(error);
+        
         toast({
           title: "Network Error",
           description: "Please check your internet connection.",
@@ -97,6 +102,8 @@ const SignInForm = () => {
         });
       }
     } finally {
+      console.log("done login");
+      
       setLoading(false);
     }
   };

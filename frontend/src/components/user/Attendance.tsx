@@ -34,8 +34,10 @@ const Attendance = () => {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URI!}/attendance/user/${userId}`,
           {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+            headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          } },
         );
 
         // Set attendanceData to response data or empty array if no sessions

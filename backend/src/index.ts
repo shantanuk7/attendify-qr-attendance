@@ -22,11 +22,12 @@ const allowedOrigins = [
   ];
 // Middleware
 app.use(cors(
-{
+  {
     origin:'*',
     credentials: true,
-}
+  }
 ));
+app.options('*', cors())
 app.use(express.json());
 
 // Authentication Routes

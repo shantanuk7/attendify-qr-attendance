@@ -54,8 +54,10 @@ const GroupTable = () => {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URI!}/admin/get-groups`,
           {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+            headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          } },
         );
         setGroups(response.data);
       } catch (error) {
@@ -76,8 +78,10 @@ const GroupTable = () => {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URI!}/admin/get-users`,
           {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+            headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          } },
         );
         setUsers(response.data.data);
         setFilteredUsers(response.data.data);
@@ -118,8 +122,10 @@ const GroupTable = () => {
         `${process.env.NEXT_PUBLIC_API_URI!}/admin/add-user-to-group`,
         { groupId: selectedGroupId, userId: selectedUserId },
         {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          } },
       );
       toast({ title: response.data.message, variant: "default" });
       setModalOpen(false);

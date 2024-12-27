@@ -76,8 +76,12 @@ const SignUpForm = () => {
         });
       }
     } catch (error: any) {
+
       if (error.response) {
         const { status, data } = error.response;
+
+        console.log(error.response);
+        
 
         if (status === 403) {
           toast({
@@ -102,6 +106,8 @@ const SignUpForm = () => {
           });
         }
       } else {
+        console.log(error);
+        
         toast({
           title: "Network Error",
           description: "Please check your internet connection.",

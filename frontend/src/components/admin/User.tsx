@@ -40,8 +40,11 @@ const User = () => {
     try {
       const token = Cookies.get("authToken");
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URI}/admin/get-users`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          } },
+        );
       setUsers(response.data.data);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -54,8 +57,11 @@ const User = () => {
     try {
       const token = Cookies.get("authToken");
       await axios.post(`${process.env.NEXT_PUBLIC_API_URI}/admin/create-user`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          } },
+      );
       toast({
         title: "User added successfully",
         variant: "default",
@@ -73,8 +79,11 @@ const User = () => {
     try {
       const token = Cookies.get("authToken");
       await axios.put(`${process.env.NEXT_PUBLIC_API_URI}/admin/update-user/${selectedUser.email}`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          } },
+      );
       toast({
         title: "User updated successfully",
         variant: "default",
@@ -91,8 +100,11 @@ const User = () => {
     try {
       const token = Cookies.get("authToken");
       await axios.delete(`${process.env.NEXT_PUBLIC_API_URI}/admin/delete-user/${email}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          } },
+      );
       toast({
         title: "User deleted successfully",
         variant: "default",

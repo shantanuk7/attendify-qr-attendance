@@ -10,7 +10,8 @@ export function middleware(request: NextRequest) {
   if (token) {
     try {
       const { role }: { role: string } = jwtDecode(token);
-
+      
+      
       // Redirect authenticated users trying to access /auth pages
       if (pathname.startsWith("/auth")) {
         const redirectPath = role === "admin" ? "/admin" : "/user";
@@ -41,6 +42,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  console.log(token);
+  console.log("Redirecting because unauthenticated");
+  
   // Redirect unauthenticated users trying to access protected routes
   return NextResponse.redirect(new URL("/auth/signin", request.url));
 }

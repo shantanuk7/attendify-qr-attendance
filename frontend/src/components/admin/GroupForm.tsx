@@ -43,7 +43,10 @@ const GroupForm = () => {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URI!}/admin/create-group`,
         values,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
+          } }
       );
 
       toast({

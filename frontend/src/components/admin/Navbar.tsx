@@ -32,14 +32,21 @@ const Navbar = () => {
           });
           return;
         }
-
+        
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URI!}/admin/get-groups`, {
           headers: {
             Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': '69420'
           },
         });
 
-        setGroups(response.data); 
+        const groupsData = Array.isArray(response.data) ? response.data : []; // Default to empty array if not an array
+
+        console.log(response.data);
+        
+
+        setGroups(groupsData);
+
       } catch (error:any) {
         console.error('Error fetching groups:', error);
         toast({
@@ -52,6 +59,13 @@ const Navbar = () => {
 
     fetchGroups();
   }, [toast]);
+
+  useEffect(() => {
+    console.log('Updated groups state:', groups);
+    groups.map((group)=>{
+      console.log(group._id, group.name);
+    })
+  }, [groups]);  // Logs every time the groups state changes
 
   const handleCreateSession = async () => {
     setLoading(true);
@@ -153,11 +167,15 @@ const Navbar = () => {
             <SelectValue placeholder="Select Group" />
           </SelectTrigger>
           <SelectContent>
-            {groups.map((group) => (
-              <SelectItem key={group._id} value={group._id}>
-                {group.name}
-              </SelectItem>
-            ))}
+            {Array.isArray(groups) && groups.length > 0 ? (
+              groups.map((group) => (
+                <SelectItem key={group._id} value={group._id}>
+                  {group.name}
+                </SelectItem>
+              ))
+            ) : (
+              <>No groups available</>
+            )}
           </SelectContent>
         </Select>
 
